@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ORBIT — Organiza tus tareas en órbita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#1a6cff"/>
+<link rel="icon" type="image/png" href="icons/icon-192.png"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<meta name="description" content="ORBIT — pon tus tareas en órbita. Lista, Kanban, Calendario y Panel de productividad, en la nube y offline."/>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="ORBIT — Organiza tus tareas en órbita"/>
+<meta property="og:description" content="Gestor de tareas rápido y minimalista: Lista, Kanban, Calendario y Panel. Gratis, en la nube y offline."/>
+<meta property="og:image" content="icons/icon-512.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<style>
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+  :root{
+    --bg:#06080f; --bg-s:#0c1120; --bg-e:#111827; --bg-in:#0f1929;
+    --bd:#1e2d45; --bd-hi:#2a4a6b;
+    --accent:#1a6cff; --accent-g:rgba(26,108,255,.22); --accent-d:rgba(26,108,255,.12);
+    --txt:#e8edf5; --txt2:#7a8fa8; --txt3:#3d5068;
+    --done:#2cb67d; --err:#ff4d6d; --high:#ff6b6b; --med:#ffa94d; --low:#69db7c;
+    --r:6px; --rm:10px; --rl:16px;
+    --fd:'Space Grotesk',sans-serif; --fb:'Inter',sans-serif; --tr:.17s ease;
+  }
+
+  html{ font-size:16px; scroll-behavior:smooth; }
+  body{
+    background:var(--bg); color:var(--txt); font-family:var(--fb);
+    min-height:100vh; line-height:1.5; -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(circle at 12% 18%,rgba(26,108,255,.06) 0%,transparent 50%),
+      radial-gradient(circle at 88% 82%,rgba(26,108,255,.04) 0%,transparent 40%);
+  }
+  a{ color:inherit; text-decoration:none; }
+
+  /* ── HEADER ── */
+  .hdr{
+    position:sticky; top:0; z-index:300;
+    border-bottom:1px solid var(--bd);
+    background:rgba(6,8,15,.85); backdrop-filter:blur(14px);
+  }
+  .hdr-in{
+    max-width:1160px; margin:0 auto; padding:14px 24px;
+    display:flex; align-items:center; gap:14px;
+  }
+  .logo{
+    font-family:var(--fd); font-size:1rem; font-weight:700; letter-spacing:.16em;
+    display:flex; align-items:center; gap:9px; color:var(--txt);
+  }
+  .logo-dot{
+    width:9px; height:9px; border-radius:50%; background:var(--accent);
+    box-shadow:0 0 14px var(--accent); animation:pulse 2.8s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.65)}}
+  .hdr-nav{ display:flex; gap:6px; margin-left:26px; flex:1; }
+  .hdr-nav a{
+    font-size:.86rem; color:var(--txt2); padding:7px 12px; border-radius:var(--r);
+    transition:var(--tr);
+  }
+  .hdr-nav a:hover{ color:var(--txt); background:var(--bg-s); }
+  .hdr-actions{ display:flex; align-items:center; gap:10px; }
+
+  .btn{
+    font-family:var(--fb); font-size:.86rem; font-weight:600;
+    padding:9px 18px; border-radius:var(--rm); border:1px solid transparent;
+    cursor:pointer; transition:var(--tr); display:inline-flex; align-items:center; gap:9px;
+    white-space:nowrap;
+  }
+  .btn-pri{
+    background:var(--accent); color:#fff;
+    box-shadow:0 4px 18px var(--accent-g);
+  }
+  .btn-pri:hover{ transform:translateY(-1px); box-shadow:0 6px 26px var(--accent-g); }
+  .btn-ghost{
+    background:var(--bg-s); border-color:var(--bd); color:var(--txt);
+  }
+  .btn-ghost:hover{ border-color:var(--bd-hi); background:var(--bg-e); }
+  .menu-toggle{ display:none; background:none; border:none; color:var(--txt); font-size:22px; cursor:pointer; margin-left:auto; }
+
+  /* ── HERO ── */
+  .hero{ max-width:900px; margin:0 auto; padding:90px 24px 60px; text-align:center; }
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--accent-d); border:1px solid var(--accent-g); color:#9dc2ff;
+    font-size:.76rem; font-weight:500; padding:6px 14px; border-radius:999px; margin-bottom:28px;
+  }
+  .badge .b-dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
+  .hero h1{
+    font-family:var(--fd); font-weight:700;
+    font-size:clamp(2.6rem,7vw,4.6rem); line-height:1.05; letter-spacing:-.02em;
+    margin-bottom:22px;
+  }
+  .hero h1 .grad{
+    background:linear-gradient(120deg,#1a6cff,#6ea8ff 60%,#cc5de8);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .hero p.sub{
+    font-size:clamp(1rem,2.3vw,1.22rem); color:var(--txt2);
+    max-width:560px; margin:0 auto 34px;
+  }
+  .hero-cta{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .hero-cta .btn{ padding:13px 26px; font-size:.95rem; }
+  .hero-note{ margin-top:16px; font-size:.78rem; color:var(--txt3); }
+
+  /* ── APP PREVIEW ── */
+  .preview{ max-width:960px; margin:20px auto 0; padding:0 24px; }
+  .window{
+    background:var(--bg-s); border:1px solid var(--bd); border-radius:var(--rl);
+    overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.5);
+  }
+  .win-bar{
+    display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-e); border-bottom:1px solid var(--bd);
+  }
+  .dot{ width:11px; height:11px; border-radius:50%; }
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .win-title{ margin-left:10px; font-family:var(--fd); font-size:.78rem; letter-spacing:.14em; color:var(--txt2); }
+  .win-body{ padding:22px; display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; }
+  .col{ background:var(--bg-in); border:1px solid var(--bd); border-radius:var(--rm); padding:14px; }
+  .col-h{ display:flex; align-items:center; gap:8px; font-size:.8rem; font-weight:600; margin-bottom:12px; color:var(--txt); }
+  .col-h .pin{ width:8px; height:8px; border-radius:2px; }
+  .task{
+    background:var(--bg-s); border:1px solid var(--bd); border-radius:var(--r);
+    padding:10px 12px; margin-bottom:8px; font-size:.82rem; color:var(--txt);
+    display:flex; align-items:flex-start; gap:9px;
+  }
+  .task .chk{ width:14px;height:14px;border:1.5px solid var(--txt3);border-radius:4px;flex-shrink:0;margin-top:1px; }
+  .task.done .chk{ background:var(--done); border-color:var(--done); position:relative; }
+  .task.done .chk::after{ content:"✓"; position:absolute; top:-3px; left:1px; font-size:11px; color:#04110b; }
+  .task.done span{ text-decoration:line-through; color:var(--txt3); }
+  .task .prio{ font-size:.62rem; padding:1px 6px; border-radius:999px; font-weight:600; margin-left:auto; flex-shrink:0; }
+  .p-high{ background:var(--high-d,rgba(255,107,107,.14)); color:var(--high); }
+  .p-med{ background:rgba(255,169,77,.14); color:var(--med); }
+  .p-low{ background:rgba(105,219,124,.14); color:var(--low); }
+
+  /* ── SECTION SHELL ── */
+  section.block{ max-width:1160px; margin:0 auto; padding:80px 24px; }
+  .sec-head{ text-align:center; max-width:600px; margin:0 auto 48px; }
+  .sec-head h2{ font-family:var(--fd); font-size:clamp(1.8rem,4vw,2.6rem); letter-spacing:-.01em; margin-bottom:12px; }
+  .sec-head p{ color:var(--txt2); font-size:1.02rem; }
+
+  /* ── FEATURES ── */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px; }
+  .card{
+    background:var(--bg-s); border:1px solid var(--bd); border-radius:var(--rl);
+    padding:26px; transition:var(--tr);
+  }
+  .card:hover{ border-color:var(--bd-hi); transform:translateY(-4px); }
+  .card .ic{
+    width:44px; height:44px; border-radius:var(--rm);
+    background:var(--accent-d); border:1px solid var(--accent-g);
+    display:flex; align-items:center; justify-content:center; margin-bottom:16px;
+    color:var(--accent);
+  }
+  .card .ic svg{ width:22px; height:22px; }
+  .card h3{ font-family:var(--fd); font-size:1.1rem; margin-bottom:7px; }
+  .card p{ color:var(--txt2); font-size:.9rem; }
+
+  /* ── STATS STRIP ── */
+  .strip{ border-top:1px solid var(--bd); border-bottom:1px solid var(--bd); background:var(--bg-s); }
+  .strip-in{ max-width:1000px; margin:0 auto; padding:44px 24px; display:flex; flex-wrap:wrap; justify-content:space-around; gap:30px; text-align:center; }
+  .strip .num{ font-family:var(--fd); font-size:2.4rem; font-weight:700; color:var(--accent); }
+  .strip .lbl{ font-size:.82rem; color:var(--txt2); margin-top:4px; }
+
+  /* ── CTA ── */
+  .cta{ text-align:center; padding:100px 24px; }
+  .cta h2{ font-family:var(--fd); font-size:clamp(2rem,5vw,3.2rem); letter-spacing:-.02em; margin-bottom:14px; }
+  .cta p{ color:var(--txt2); margin-bottom:30px; font-size:1.05rem; }
+  .cta .btn{ padding:15px 34px; font-size:1rem; }
+
+  /* ── FOOTER ── */
+  footer{ border-top:1px solid var(--bd); padding:36px 24px; }
+  .foot-in{ max-width:1160px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px; }
+  .foot-in .logo{ font-size:.9rem; }
+  .foot-links{ display:flex; gap:22px; flex-wrap:wrap; font-size:.82rem; color:var(--txt2); }
+  .foot-links a:hover{ color:var(--txt); }
+  .foot-copy{ font-size:.78rem; color:var(--txt3); width:100%; text-align:center; margin-top:8px; }
+
+  @media(max-width:820px){
+    .hdr-nav, .hdr-actions a.btn-ghost:not(.enter){ display:none; }
+    .menu-toggle{ display:block; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="logo"><span class="logo-dot"></span>ORBIT</div>
+    <nav class="hdr-nav">
+      <a href="#features">Funciones</a>
+      <a href="#views">Vistas</a>
+      <a href="#stats">Por qué ORBIT</a>
+    </nav>
+    <div class="hdr-actions">
+      <a href="index.html" class="btn btn-ghost enter">Iniciar sesión</a>
+      <a href="index.html" class="btn btn-pri">Comenzar gratis</a>
+    </div>
+    <button class="menu-toggle" aria-label="Menú">☰</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="badge"><span class="b-dot"></span>Gratis · Sincroniza en la nube · Funciona offline</span>
+  <h1>Pon tus tareas <span class="grad">en órbita</span></h1>
+  <p class="sub">ORBIT es tu gestor de tareas: listas, Kanban y calendario en un solo lugar. Rápido, minimalista y siempre sincronizado.</p>
+  <div class="hero-cta">
+    <a href="index.html" class="btn btn-pri">
+      Comenzar ahora
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="#features" class="btn btn-ghost">Ver funciones</a>
+  </div>
+  <p class="hero-note">Sin tarjeta de crédito · Inicia sesión con Google en un clic</p>
+</section>
+
+<!-- APP PREVIEW -->
+<div class="preview">
+  <div class="window">
+    <div class="win-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="win-title">ORBIT · TABLERO KANBAN</span>
+    </div>
+    <div class="win-body">
+      <div class="col">
+        <div class="col-h"><span class="pin" style="background:var(--med)"></span>Por hacer</div>
+        <div class="task"><span class="chk"></span><span>Diseñar pantalla de inicio</span><span class="prio p-high">Alta</span></div>
+        <div class="task"><span class="chk"></span><span>Estudiar Front-End</span><span class="prio p-med">Media</span></div>
+        <div class="task"><span class="chk"></span><span>Comprar café</span><span class="prio p-low">Baja</span></div>
+      </div>
+      <div class="col">
+        <div class="col-h"><span class="pin" style="background:var(--accent)"></span>En progreso</div>
+        <div class="task"><span class="chk"></span><span>Conectar Supabase</span><span class="prio p-high">Alta</span></div>
+        <div class="task"><span class="chk"></span><span>Ajustar estilos CSS</span><span class="prio p-med">Media</span></div>
+      </div>
+      <div class="col">
+        <div class="col-h"><span class="pin" style="background:var(--done)"></span>Completado</div>
+        <div class="task done"><span class="chk"></span><span>Configurar el proyecto</span></div>
+        <div class="task done"><span class="chk"></span><span>Login con Google</span></div>
+        <div class="task done"><span class="chk"></span><span>Modo offline (PWA)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="block" id="features">
+  <div class="sec-head">
+    <h2>Todo lo que necesitas para no perder el hilo</h2>
+    <p>Herramientas potentes con una interfaz que no estorba.</p>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 14 14" fill="none"><path d="M1 3h12M1 7h12M1 11h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <h3>3 vistas en 1</h3>
+      <p>Cambia entre Lista, Kanban y Calendario al instante según cómo pienses.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 10v2a1 1 0 001 1h8a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>Sincronización en la nube</h3>
+      <p>Tus tareas te siguen a cualquier dispositivo, protegidas y solo tuyas.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 4v3l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>Funciona sin conexión</h3>
+      <p>Offline-first: sigue trabajando sin internet y sincroniza al reconectar.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="7.5" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="1" y="7.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.4"/><path d="M10.25 7.5v5.5M7.5 10.25h5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <h3>Templates y grupos</h3>
+      <p>Arranca en segundos con conjuntos de grupos preconfigurados para tu flujo.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 14 14" fill="none"><path d="M9 1H3a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V4L9 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.5 7.5h5M4.5 10h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <h3>Subtareas y notas</h3>
+      <p>Prioridades, etiquetas, fechas límite, comentarios y notas en Markdown.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/></svg></div>
+      <h3>Atajos de teclado</h3>
+      <p>Paleta de comandos (Ctrl+K) y atajos para volar sin tocar el ratón.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="strip" id="stats">
+  <div class="strip-in">
+    <div><div class="num">3</div><div class="lbl">vistas: Lista · Kanban · Calendario</div></div>
+    <div><div class="num">0€</div><div class="lbl">gratis para siempre</div></div>
+    <div><div class="num">∞</div><div class="lbl">tareas y grupos ilimitados</div></div>
+    <div><div class="num">100%</div><div class="lbl">offline-first e instalable</div></div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta" id="views">
+  <h2>Empieza a organizarte hoy</h2>
+  <p>Inicia sesión con Google y tus tareas estarán listas en segundos.</p>
+  <a href="index.html" class="btn btn-pri">
+    Entrar a ORBIT
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-in">
+    <div class="logo"><span class="logo-dot"></span>ORBIT</div>
+    <div class="foot-links">
+      <a href="index.html">Abrir la app</a>
+      <a href="#features">Funciones</a>
+      <a href="#">Privacidad</a>
+      <a href="#">Términos</a>
+    </div>
+    <div class="foot-copy">© 2026 ORBIT · Task Manager · Hecho para Front-End</div>
+  </div>
+</footer>
+
+<script>
+  document.querySelector('.menu-toggle').addEventListener('click', () => {
+    const nav = document.querySelector('.hdr-nav');
+    nav.style.display = nav.style.display === 'flex' ? '' : 'flex';
+    nav.style.flexDirection = 'column';
+    nav.style.position = 'absolute';
+    nav.style.top = '60px'; nav.style.right = '24px';
+    nav.style.background = 'var(--bg-s)';
+    nav.style.border = '1px solid var(--bd)';
+    nav.style.borderRadius = 'var(--rm)';
+    nav.style.padding = '8px';
+  });
+</script>
+
+</body>
+</html>

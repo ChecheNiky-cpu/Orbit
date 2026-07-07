@@ -1,0 +1,17 @@
+# Configuración local con claves reales (no commitear)
+config.local.js
+.env
+.env.*
+
+# Guía privada de despliegue (solo para ti)
+README-PRIVADO.md
+
+# Backups exportados por la app
+*-backup-*.json
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.claude/
+node_modules/
