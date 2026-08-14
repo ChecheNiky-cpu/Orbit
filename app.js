@@ -3,38 +3,57 @@
 // ═══════════════════════════════════════════════════
 
 // ── CONSTANTS ──
-const GROUP_COLORS = ['#1a6cff', '#2cb67d', '#ffa94d', '#ff6b6b', '#cc5de8', '#74c0fc', '#f783ac', '#a9e34b', '#ff922b', '#20c997'];
+// Paleta de fondo de los grupos, por familias de color
+const GROUP_PALETTE = [
+    {
+        label: 'Primarios', colors: [
+            ['#e03131', 'Rojo'], ['#ffd43b', 'Amarillo'], ['#1a6cff', 'Azul']
+        ]
+    },
+    {
+        label: 'Secundarios', colors: [
+            ['#ff922b', 'Naranja'], ['#2cb67d', 'Verde'], ['#9b5de5', 'Morado']
+        ]
+    },
+    {
+        label: 'Otros', colors: [
+            ['#f783ac', 'Rosa'], ['#20c997', 'Turquesa'], ['#a9e34b', 'Lima'], ['#7a8fa8', 'Gris']
+        ]
+    },
+];
+const GROUP_COLORS = GROUP_PALETTE.reduce((acc, s) => acc.concat(s.colors.map(c => c[0])), []);
 const PRIO_LABELS = { high: 'Alta', medium: 'Media', low: 'Baja', none: '—' };
+const PALETTE_ICON = `<svg viewBox="0 0 14 14" fill="none"><path d="M7 1.2a5.8 5.8 0 000 11.6c.72 0 1.2-.5 1.2-1.15 0-.3-.12-.57-.3-.78a1.15 1.15 0 01.85-1.92h1.4A3.65 3.65 0 0012.8 5.3C12.25 2.9 9.85 1.2 7 1.2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="4.2" cy="6.3" r=".95" fill="currentColor"/><circle cx="7" cy="4.2" r=".95" fill="currentColor"/><circle cx="9.8" cy="6.3" r=".95" fill="currentColor"/></svg>`;
 const CF_TYPES = ['texto', 'número', 'URL', 'persona', 'checkbox'];
 const TEMPLATES = [
     {
         icon: '🚀', name: 'Proyecto de Software', desc: 'Backlog · Sprint · En revisión · Listo', groups: [
-            { name: '📋 Backlog', color: '#7a8fa8' }, { name: '⚡ En progreso', color: '#ffa94d' }, { name: '🔍 En revisión', color: '#cc5de8' }, { name: '✅ Listo', color: '#2cb67d' }
+            { name: '📋 Backlog', color: '#7a8fa8' }, { name: '⚡ En progreso', color: '#ff922b' }, { name: '🔍 En revisión', color: '#9b5de5' }, { name: '✅ Listo', color: '#2cb67d' }
         ]
     },
     {
         icon: '📅', name: 'Planeación semanal', desc: 'Por hacer · Hoy · Hecho', groups: [
-            { name: '📌 Por hacer', color: '#1a6cff' }, { name: '🔥 Hoy', color: '#ff6b6b' }, { name: '✅ Hecho', color: '#2cb67d' }
+            { name: '📌 Por hacer', color: '#1a6cff' }, { name: '🔥 Hoy', color: '#e03131' }, { name: '✅ Hecho', color: '#2cb67d' }
         ]
     },
     {
         icon: '🎯', name: 'OKRs', desc: 'Objetivos · Key Results · Iniciativas', groups: [
-            { name: '🎯 Objetivos', color: '#cc5de8' }, { name: '📊 Key Results', color: '#1a6cff' }, { name: '🛠 Iniciativas', color: '#ffa94d' }
+            { name: '🎯 Objetivos', color: '#9b5de5' }, { name: '📊 Key Results', color: '#1a6cff' }, { name: '🛠 Iniciativas', color: '#ff922b' }
         ]
     },
     {
         icon: '🐛', name: 'Bug Tracker', desc: 'Reportado · Investigando · Fix · Cerrado', groups: [
-            { name: '🐛 Reportado', color: '#ff6b6b' }, { name: '🔎 Investigando', color: '#ffa94d' }, { name: '🛠 Fix en curso', color: '#74c0fc' }, { name: '✅ Cerrado', color: '#2cb67d' }
+            { name: '🐛 Reportado', color: '#e03131' }, { name: '🔎 Investigando', color: '#ff922b' }, { name: '🛠 Fix en curso', color: '#20c997' }, { name: '✅ Cerrado', color: '#2cb67d' }
         ]
     },
     {
         icon: '📝', name: 'Editorial', desc: 'Ideas · Redacción · Revisión · Publicado', groups: [
-            { name: '💡 Ideas', color: '#a9e34b' }, { name: '✍️ Redacción', color: '#1a6cff' }, { name: '📖 Revisión', color: '#ffa94d' }, { name: '🌐 Publicado', color: '#2cb67d' }
+            { name: '💡 Ideas', color: '#a9e34b' }, { name: '✍️ Redacción', color: '#1a6cff' }, { name: '📖 Revisión', color: '#ffd43b' }, { name: '🌐 Publicado', color: '#2cb67d' }
         ]
     },
     {
         icon: '🏠', name: 'Vida personal', desc: 'Hogar · Salud · Aprendizaje · Compras', groups: [
-            { name: '🏠 Hogar', color: '#ff922b' }, { name: '💪 Salud', color: '#2cb67d' }, { name: '📚 Aprendizaje', color: '#1a6cff' }, { name: '🛒 Compras', color: '#cc5de8' }
+            { name: '🏠 Hogar', color: '#ff922b' }, { name: '💪 Salud', color: '#2cb67d' }, { name: '📚 Aprendizaje', color: '#1a6cff' }, { name: '🛒 Compras', color: '#9b5de5' }
         ]
     },
 ];
@@ -49,8 +68,9 @@ let sortMode = 'manual';
 let searchQ = '';
 let editTaskId = null;
 let editTaskDraft = {};
-let selectedColor = GROUP_COLORS[0];
+let selectedColor = '#1a6cff';
 let dragTaskId = null;
+let dragGroupId = null;
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let cfAddType = 'texto';
@@ -81,7 +101,7 @@ document.addEventListener('DOMContentLoaded', bootstrap);
 
 function seedDefaults() {
     const g1 = mkGroup('📋 Por hacer', '#1a6cff');
-    const g2 = mkGroup('⚡ En progreso', '#ffa94d');
+    const g2 = mkGroup('⚡ En progreso', '#ff922b');
     const g3 = mkGroup('✅ Completado', '#2cb67d');
     addTask(g1.id, 'Diseñar pantalla de inicio', 'high', '', new Date(Date.now() + 86400000 * 3).toISOString().slice(0, 10), ['diseño']);
     addTask(g1.id, 'Revisar requerimientos', 'medium', '', '', []);
@@ -154,6 +174,7 @@ function renderList(q) {
     mainEl.innerHTML = '';
     mainEl.appendChild(wrap);
     bindDragDrop();
+    bindGroupReorder(wrap);
 }
 
 function buildGroupEl(group, q) {
@@ -162,12 +183,19 @@ function buildGroupEl(group, q) {
     const el = document.createElement('div');
     el.className = `group${group.collapsed ? ' collapsed' : ''}`;
     el.dataset.gid = group.id;
+    el.style.setProperty('--gc', safeColor(group.color));
 
     el.innerHTML = `
-    <div class="g-hdr" data-gid="${group.id}">
-      <div class="g-color" style="background:${group.color}"></div>
-      <input class="g-name-in" value="${esc(group.name)}" data-gid="${group.id}" title="Clic para renombrar"/>
+    <div class="g-hdr" data-gid="${group.id}" title="Arrastra el grupo para moverlo arriba/abajo">
+      <span class="g-grip" aria-hidden="true">
+        <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><circle cx="2" cy="3" r="1" fill="currentColor"/><circle cx="6" cy="3" r="1" fill="currentColor"/><circle cx="2" cy="7" r="1" fill="currentColor"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="2" cy="11" r="1" fill="currentColor"/><circle cx="6" cy="11" r="1" fill="currentColor"/></svg>
+      </span>
+      <button class="g-color" data-action="pick-color" data-gid="${group.id}" title="Cambiar color de fondo del grupo" style="background:${safeColor(group.color)}"></button>
+      <input class="g-name-in" value="${esc(group.name)}" data-gid="${group.id}" readonly title="Doble clic para renombrar"/>
       <span class="g-count">${total}</span>
+      <button class="btn-ic g-color-btn" data-action="pick-color" data-gid="${group.id}" title="Color del bloque" aria-label="Cambiar el color del bloque">
+        ${PALETTE_ICON}
+      </button>
       <div class="g-actions">
         <button class="btn-ic" data-action="add-task" data-gid="${group.id}" title="Agregar tarea">
           <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -187,16 +215,57 @@ function buildGroupEl(group, q) {
       </div>`}
     </div>`;
 
-    // header toggle
-    el.querySelector('.g-hdr').addEventListener('click', e => {
-        if (e.target.closest('.g-name-in') || e.target.closest('.btn-ic')) return;
-        group.collapsed = !group.collapsed; save(); render();
+    const hdr = el.querySelector('.g-hdr');
+    const nameIn = el.querySelector('.g-name-in');
+
+    // header toggle — sin re-render, así el doble clic (renombrar) no pierde el nodo
+    hdr.addEventListener('click', e => {
+        if (e.target.closest('.btn-ic') || e.target.closest('.g-color') || !nameIn.readOnly) return;
+        group.collapsed = !group.collapsed;
+        el.classList.toggle('collapsed', group.collapsed);
+        save();
     });
-    // rename
-    el.querySelector('.g-name-in').addEventListener('change', e => {
+    // rename (doble clic en la cabecera)
+    hdr.addEventListener('dblclick', e => {
+        if (e.target.closest('.btn-ic') || e.target.closest('.g-color')) return;
+        nameIn.readOnly = false;
+        nameIn.classList.add('editing');
+        nameIn.focus(); nameIn.select();
+    });
+    nameIn.addEventListener('change', e => {
         group.name = e.target.value.trim() || group.name; save(); render();
     });
-    el.querySelector('.g-name-in').addEventListener('click', e => e.stopPropagation());
+    nameIn.addEventListener('blur', () => { nameIn.readOnly = true; nameIn.classList.remove('editing'); });
+    nameIn.addEventListener('keydown', e => {
+        if (e.key === 'Enter') nameIn.blur();
+        if (e.key === 'Escape') { nameIn.value = group.name; nameIn.blur(); }
+    });
+    // color de fondo del grupo (barrita lateral + botón de paleta)
+    el.querySelectorAll('[data-action="pick-color"]').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            openColorPicker(e.currentTarget, group);
+        });
+    });
+    // reordenar: solo se arrastra si el gesto empieza en la cabecera
+    el.addEventListener('mousedown', e => {
+        const onHdr = !!e.target.closest('.g-hdr');
+        el.draggable = onHdr && !e.target.closest('.btn-ic') && !e.target.closest('.g-color') && nameIn.readOnly;
+    });
+    el.addEventListener('dragstart', e => {
+        if (e.target !== el) return;            // el arrastre viene de una tarea
+        dragGroupId = group.id;
+        el.classList.add('g-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', group.id);
+    });
+    el.addEventListener('dragend', () => {
+        el.draggable = false;
+        el.classList.remove('g-dragging');
+        if (!dragGroupId) return;
+        dragGroupId = null;
+        commitGroupOrder(el.parentElement);
+    });
     // del group
     const delBtn = el.querySelector('[data-action="del-group"]');
     if (delBtn) delBtn.addEventListener('click', e => {
@@ -248,9 +317,13 @@ function buildGroupEl(group, q) {
         });
     });
     // drop zone
-    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over-group'); });
+    el.addEventListener('dragover', e => {
+        if (dragGroupId) return;                // reordenando grupos, lo maneja el contenedor
+        e.preventDefault(); el.classList.add('drag-over-group');
+    });
     el.addEventListener('dragleave', () => el.classList.remove('drag-over-group'));
     el.addEventListener('drop', e => {
+        if (dragGroupId) return;
         e.preventDefault(); el.classList.remove('drag-over-group');
         if (!dragTaskId) return;
         const task = S.tasks.find(t => t.id === dragTaskId); if (!task) return;
@@ -326,11 +399,13 @@ function renderKanban(q) {
         const kol = document.createElement('div');
         kol.className = 'kol';
         kol.dataset.gid = g.id;
+        kol.style.setProperty('--gc', safeColor(g.color));
         kol.innerHTML = `
       <div class="kol-hdr">
-        <div class="g-color" style="background:${g.color};height:12px;width:3px"></div>
+        <button class="g-color" data-action="pick-color" title="Cambiar color de fondo del grupo" style="background:${safeColor(g.color)}"></button>
         <span class="kol-name">${esc(g.name)}</span>
         <span class="kol-count">${tasks.length}</span>
+        <button class="btn-ic" data-action="pick-color" title="Color del bloque" aria-label="Cambiar el color del bloque">${PALETTE_ICON}</button>
       </div>
       <div class="kol-body" id="kb-${g.id}">
         ${tasks.map(t =>`
@@ -347,6 +422,13 @@ function renderKanban(q) {
       <div class="k-add-row" data-gid="${g.id}">
         <input class="k-add-in" placeholder="+ Agregar tarea..." data-gid="${g.id}"/>
       </div>`;
+        // color de fondo de la columna
+        kol.querySelectorAll('[data-action="pick-color"]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                openColorPicker(e.currentTarget, g);
+            });
+        });
         // kcard click → open modal
         kol.querySelectorAll('.kcard').forEach(kc => {
             kc.addEventListener('click', () => openTaskModal(kc.dataset.taskId));
@@ -644,6 +726,43 @@ function bindDragDrop() {
 }
 
 // ─────────────────────────────────────────────────
+//  REORDENAR GRUPOS (arrastrar por la cabecera)
+// ─────────────────────────────────────────────────
+function bindGroupReorder(wrap) {
+    wrap.addEventListener('dragover', e => {
+        if (!dragGroupId) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const dragging = wrap.querySelector('.g-dragging');
+        if (!dragging) return;
+        const ref = groupAfterPoint(wrap, e.clientY);
+        if (ref === dragging) return;
+        if (ref) wrap.insertBefore(dragging, ref);
+        else wrap.appendChild(dragging);
+    });
+    wrap.addEventListener('drop', e => { if (dragGroupId) e.preventDefault(); });
+}
+
+// Primer grupo (sin contar el arrastrado) cuyo centro queda por debajo del cursor
+function groupAfterPoint(wrap, y) {
+    return [...wrap.querySelectorAll('.group:not(.g-dragging)')]
+        .find(el => { const r = el.getBoundingClientRect(); return y < r.top + r.height / 2; }) || null;
+}
+
+// Pasa el orden visual del DOM al estado y guarda
+function commitGroupOrder(wrap) {
+    if (!wrap) return;
+    const ids = [...wrap.querySelectorAll('.group')].map(el => el.dataset.gid);
+    let changed = false;
+    ids.forEach((id, i) => {
+        const g = S.groups.find(x => x.id === id);
+        if (g && g.order !== i) { g.order = i; changed = true; }
+    });
+    if (!changed) return;
+    save(); render(); toast_('Grupo movido');
+}
+
+// ─────────────────────────────────────────────────
 //  CMD PALETTE
 // ─────────────────────────────────────────────────
 function openCmd() { cmdOverlay.hidden = false; cmdIn.value = ''; renderCmdResults(''); cmdIn.focus(); }
@@ -703,14 +822,94 @@ function mkCmdItem({ label, hint, icon, action }) {
 // ─────────────────────────────────────────────────
 function openGroupModal() { gmName.value = ''; groupModal.hidden = false; gmName.focus(); }
 
-function buildColorSwatches(container, onSelect) {
-    GROUP_COLORS.forEach((c, i) => {
+function buildColorSwatches(container, onSelect, current = GROUP_COLORS[0]) {
+    GROUP_COLORS.forEach(c => {
         const s = document.createElement('div');
-        s.className = `csw${i === 0 ? ' sel' : ''}`;
+        s.className = `csw${c === current ? ' sel' : ''}`;
         s.style.background = c; s.dataset.c = c;
         s.addEventListener('click', () => { container.querySelectorAll('.csw').forEach(x => x.classList.remove('sel')); s.classList.add('sel'); onSelect(c); });
         container.appendChild(s);
     });
+}
+
+// ─────────────────────────────────────────────────
+//  COLOR DE FONDO DEL GRUPO
+// ─────────────────────────────────────────────────
+let colorPop = null;
+
+function openColorPicker(anchor, group) {
+    const same = colorPop && colorPop.dataset.gid === group.id;
+    closeColorPicker();
+    if (same) return;                            // segundo clic en el mismo botón: cerrar
+
+    const cur = safeColor(group.color);
+    const pop = document.createElement('div');
+    pop.className = 'color-pop';
+    pop.dataset.gid = group.id;
+    pop.innerHTML = `
+    <div class="color-pop-t">Color del bloque</div>
+    <div class="color-pop-fams"></div>
+    <label class="color-pop-custom">
+      <span>Personalizado</span>
+      <input type="color" value="${cur}"/>
+    </label>`;
+
+    // una fila por familia (primarios / secundarios / otros)
+    const fams = pop.querySelector('.color-pop-fams');
+    GROUP_PALETTE.forEach(fam => {
+        const sec = document.createElement('div');
+        sec.className = 'color-fam';
+        sec.innerHTML = `<div class="color-fam-t">${fam.label}</div><div class="color-pop-grid"></div>`;
+        const grid = sec.querySelector('.color-pop-grid');
+        fam.colors.forEach(([c, name]) => {
+            const s = document.createElement('button');
+            s.className = `csw${c.toLowerCase() === cur.toLowerCase() ? ' sel' : ''}`;
+            s.style.background = c;
+            s.title = name;
+            s.setAttribute('aria-label', `Color ${name}`);
+            s.addEventListener('mouseenter', () => previewGroupColor(group.id, c));
+            s.addEventListener('mouseleave', () => previewGroupColor(group.id, cur));
+            s.addEventListener('click', () => applyGroupColor(group, c));
+            grid.appendChild(s);
+        });
+        fams.appendChild(sec);
+    });
+    const custom = pop.querySelector('input[type="color"]');
+    custom.addEventListener('input', e => previewGroupColor(group.id, e.target.value));
+    custom.addEventListener('change', e => applyGroupColor(group, e.target.value));
+
+    document.body.appendChild(pop);
+    const r = anchor.getBoundingClientRect();
+    pop.style.top = Math.min(r.bottom + 8, window.innerHeight - pop.offsetHeight - 12) + 'px';
+    pop.style.left = Math.max(12, Math.min(r.left - 4, window.innerWidth - pop.offsetWidth - 12)) + 'px';
+    colorPop = pop;
+    setTimeout(() => document.addEventListener('mousedown', outsideColorPop), 0);
+}
+
+function outsideColorPop(e) {
+    if (!colorPop) return;
+    // los botones de color los gestiona su propio click (abrir/cerrar/cambiar de grupo)
+    if (colorPop.contains(e.target) || e.target.closest('[data-action="pick-color"]')) return;
+    closeColorPicker();
+}
+
+function closeColorPicker() {
+    document.removeEventListener('mousedown', outsideColorPop);
+    if (colorPop) { colorPop.remove(); colorPop = null; }
+}
+
+// Vista previa en vivo mientras se mueve el selector nativo
+function previewGroupColor(gid, c) {
+    document.querySelectorAll(`.group[data-gid="${gid}"], .kol[data-gid="${gid}"]`).forEach(el => {
+        el.style.setProperty('--gc', c);
+        el.querySelectorAll('.g-color').forEach(dot => dot.style.background = c);
+    });
+}
+
+function applyGroupColor(group, c) {
+    group.color = c;
+    closeColorPicker();
+    save(); render(); toast_('Color actualizado');
 }
 
 // ─────────────────────────────────────────────────
@@ -785,6 +984,7 @@ function bindUI() {
         const inInput = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); cmdOverlay.hidden ? openCmd() : closeCmd(); return; }
         if (e.key === 'Escape') {
+            if (colorPop) { closeColorPicker(); return; }
             if (!cmdOverlay.hidden) { closeCmd(); return; }
             if (!taskModal.hidden) { closeTaskModal(); return; }
             if (!groupModal.hidden) { groupModal.hidden = true; return; }
@@ -1017,7 +1217,7 @@ function scheduleCloudPush() {
 let _loadedForUser = null;
 
 function bootstrap() {
-    buildColorSwatches(gmColors, c => selectedColor = c);
+    buildColorSwatches(gmColors, c => selectedColor = c, selectedColor);
     buildTemplates();
     bindUI();
     if (window.OrbitCloud && window.OrbitCloud.enabled) {

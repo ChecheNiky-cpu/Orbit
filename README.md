@@ -16,6 +16,7 @@ sincronización opcional en la nube. Rápido, minimalista y con tema oscuro/clar
 | **Recurrencia** | Tareas que se repiten cada día / semana / mes |
 | **Recordatorios** | Notificaciones del navegador para tareas vencidas o que vencen hoy |
 | **Productividad** | Racha de días, % de avance, completadas por día, distribución por prioridad y por grupo |
+| **Grupos a tu gusto** | Color de fondo por grupo (paleta o color personalizado) y reordenar arrastrando la cabecera |
 | **Acciones en lote** | Selección múltiple + completar / mover / eliminar; navegación con teclado |
 | **Deshacer** | Papelera con **Ctrl+Z** y botón "Deshacer" en las notificaciones |
 | **Nube (opcional)** | Supabase + login con Google; datos por usuario protegidos con RLS |

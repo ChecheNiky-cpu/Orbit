@@ -76,10 +76,19 @@ select {
 .hdr-in {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 12px 20px;
+    padding: 10px 20px;
     display: flex;
     align-items: center;
-    gap: 12px
+    flex-wrap: wrap;
+    gap: 8px 10px
+}
+
+/* nada de la barra se deforma: o cabe, o pasa a la fila siguiente */
+.hdr-in>button,
+.hdr-in>label,
+.hdr-in .view-tabs,
+.hdr-in .logo {
+    flex-shrink: 0
 }
 
 .logo {
@@ -123,7 +132,15 @@ select {
 .search-box {
     position: relative;
     display: flex;
-    align-items: center
+    align-items: center;
+    flex: 1 1 170px;
+    min-width: 120px;
+    max-width: 270px;
+    transition: flex-grow var(--tr)
+}
+
+.search-box:focus-within {
+    flex-grow: 2.4
 }
 
 .search-box svg {
@@ -143,14 +160,15 @@ select {
     color: var(--txt);
     font-size: .82rem;
     outline: none;
-    width: 190px;
-    transition: border-color var(--tr), width var(--tr)
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    transition: border-color var(--tr)
 }
 
 .search-input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--accent-d);
-    width: 240px
+    box-shadow: 0 0 0 2px var(--accent-d)
 }
 
 .search-input::placeholder {
@@ -229,6 +247,21 @@ select {
 .btn-hdr svg {
     width: 14px;
     height: 14px
+}
+
+/* Acciones secundarias (exportar / importar / salir): solo icono incluso en
+   pantallas grandes — con las etiquetas la fila superaba los 1200px del
+   contenedor y se desbordaba. El texto sigue en el tooltip y en aria-label. */
+#export-btn .btn-txt,
+#logout-btn .btn-txt,
+.hdr-in label.btn-ghost .btn-txt {
+    display: none
+}
+
+#export-btn,
+#logout-btn,
+.hdr-in label.btn-ghost {
+    padding: 6px 9px
 }
 
 /* ── FILTER BAR ── */
@@ -363,11 +396,14 @@ select {
 }
 
 .group {
+    --gc: #1a6cff;
     background: var(--bg-s);
+    background: color-mix(in srgb, var(--gc) 10%, var(--bg-s));
     border: 1px solid var(--bd);
+    border-color: color-mix(in srgb, var(--gc) 26%, var(--bd));
     border-radius: var(--rl);
     overflow: hidden;
-    transition: border-color var(--tr)
+    transition: border-color var(--tr), background var(--tr), opacity var(--tr)
 }
 
 .group.drag-over-group {
@@ -375,26 +411,63 @@ select {
     box-shadow: 0 0 0 2px var(--accent-d)
 }
 
+/* grupo que se está reordenando */
+.group.g-dragging {
+    opacity: .5;
+    border-color: color-mix(in srgb, var(--gc) 55%, var(--bd));
+    box-shadow: 0 14px 34px rgba(0, 0, 0, .35)
+}
+
+.group.g-dragging .g-hdr {
+    cursor: grabbing
+}
+
 .g-hdr {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 11px 14px;
-    cursor: pointer;
+    cursor: grab;
     user-select: none;
     border-bottom: 1px solid var(--bd);
+    border-bottom-color: color-mix(in srgb, var(--gc) 26%, var(--bd));
+    background: color-mix(in srgb, var(--gc) 20%, transparent);
     transition: background var(--tr)
 }
 
 .g-hdr:hover {
-    background: rgba(255, 255, 255, .015)
+    background: color-mix(in srgb, var(--gc) 28%, transparent)
+}
+
+/* asa de arrastre */
+.g-grip {
+    color: var(--txt3);
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    margin-right: -3px;
+    transition: opacity var(--tr);
+    flex-shrink: 0
+}
+
+.g-hdr:hover .g-grip {
+    opacity: .8
 }
 
 .g-color {
-    width: 3px;
-    height: 16px;
-    border-radius: 2px;
-    flex-shrink: 0
+    width: 6px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform var(--tr), box-shadow var(--tr)
+}
+
+.g-color:hover {
+    transform: scaleX(1.6);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--gc) 25%, transparent)
 }
 
 .g-name-in {
@@ -415,6 +488,20 @@ select {
     color: var(--accent)
 }
 
+/* mientras no se edita, el nombre no captura el ratón: así se puede
+   arrastrar el grupo agarrándolo por el centro de la cabecera */
+.g-name-in[readonly] {
+    pointer-events: none;
+    cursor: grab
+}
+
+.g-name-in.editing {
+    background: var(--bg-in);
+    border-radius: var(--r);
+    padding: 2px 6px;
+    cursor: text
+}
+
 .g-count {
     font-size: .68rem;
     color: var(--txt3);
@@ -431,6 +518,23 @@ select {
     gap: 2px;
     opacity: 0;
     transition: opacity var(--tr)
+}
+
+/* el botón de color vive fuera de .g-actions para estar siempre visible
+   (también en móvil, donde no existe el :hover) */
+.g-color-btn {
+    opacity: .65;
+    flex-shrink: 0;
+    transition: opacity var(--tr), color var(--tr)
+}
+
+.g-hdr:hover .g-color-btn,
+.g-color-btn:focus-visible {
+    opacity: 1
+}
+
+.g-color-btn:hover {
+    color: var(--txt)
 }
 
 .g-hdr:hover .g-actions {
@@ -831,8 +935,11 @@ select {
 }
 
 .kol {
+    --gc: #1a6cff;
     background: var(--bg-s);
+    background: color-mix(in srgb, var(--gc) 10%, var(--bg-s));
     border: 1px solid var(--bd);
+    border-color: color-mix(in srgb, var(--gc) 26%, var(--bd));
     border-radius: var(--rl);
     min-width: 260px;
     max-width: 300px;
@@ -853,7 +960,25 @@ select {
     gap: 7px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--bd);
+    border-bottom-color: color-mix(in srgb, var(--gc) 26%, var(--bd));
+    background: color-mix(in srgb, var(--gc) 20%, transparent);
+    border-radius: var(--rl) var(--rl) 0 0;
     flex-shrink: 0
+}
+
+.kol-hdr .g-color {
+    height: 14px;
+    width: 5px
+}
+
+.kol-hdr .btn-ic {
+    opacity: .65;
+    transition: opacity var(--tr)
+}
+
+.kol-hdr:hover .btn-ic,
+.kol-hdr .btn-ic:focus-visible {
+    opacity: 1
 }
 
 .kol-name {
@@ -1301,6 +1426,73 @@ select {
 
 .csw.sel {
     border-color: #fff
+}
+
+/* ── POPOVER: COLOR DE GRUPO ── */
+.color-pop {
+    position: fixed;
+    z-index: 400;
+    background: var(--bg-e);
+    border: 1px solid var(--bd-hi);
+    border-radius: var(--rm);
+    padding: 10px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .45);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 190px
+}
+
+.color-pop-t {
+    font-size: .68rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--txt2)
+}
+
+.color-pop-fams {
+    display: flex;
+    flex-direction: column;
+    gap: 9px
+}
+
+.color-fam-t {
+    font-size: .68rem;
+    color: var(--txt3);
+    margin-bottom: 5px
+}
+
+.color-pop-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px
+}
+
+.color-pop .csw {
+    padding: 0;
+    cursor: pointer
+}
+
+.color-pop-custom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: .74rem;
+    color: var(--txt2);
+    border-top: 1px solid var(--bd);
+    padding-top: 8px;
+    cursor: pointer
+}
+
+.color-pop-custom input[type="color"] {
+    width: 30px;
+    height: 22px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--bd);
+    border-radius: var(--r);
+    cursor: pointer
 }
 
 /* Task detail modal */
@@ -2035,6 +2227,25 @@ body.light .logo-dot {
     box-shadow: 0 0 6px var(--accent)
 }
 
+/* el tinte de grupo necesita algo más de fuerza sobre fondo claro */
+body.light .group,
+body.light .kol {
+    background: color-mix(in srgb, var(--gc) 15%, var(--bg-s))
+}
+
+body.light .g-hdr,
+body.light .kol-hdr {
+    background: color-mix(in srgb, var(--gc) 28%, transparent)
+}
+
+body.light .g-hdr:hover {
+    background: color-mix(in srgb, var(--gc) 36%, transparent)
+}
+
+body.light .csw.sel {
+    border-color: var(--txt)
+}
+
 /* ── RELATIONS SECTION ── */
 .rel-section {
     display: flex;
@@ -2202,34 +2413,89 @@ body.light .logo-dot {
     color: var(--txt2)
 }
 
-@media (max-width: 720px) {
-    .hdr-in {
-        flex-wrap: wrap;
-        gap: 8px
+/* ── BARRA SUPERIOR RESPONSIVE ──
+   La cabecera se va simplificando por pasos: primero pierde el atajo y los
+   textos de los botones secundarios, luego los nombres de las vistas
+   inactivas, y por último se reparte en varias filas. */
+@media (max-width: 1180px) {
+    .kbd-hint {
+        display: none
     }
 
+    .hdr-in .btn-ghost .btn-txt {
+        display: none
+    }
+
+    .hdr-in .btn-ghost {
+        padding: 6px 9px
+    }
+}
+
+@media (max-width: 1000px) {
+
+    /* solo la vista activa conserva su nombre */
+    .vtab:not(.active) .btn-txt {
+        display: none
+    }
+
+    .vtab {
+        padding: 5px 9px
+    }
+}
+
+@media (max-width: 820px) {
     .hdr-spacer {
         display: none
     }
 
     .search-box {
         order: 10;
-        width: 100%
+        flex: 1 1 100%;
+        max-width: none
     }
 
     .view-tabs {
         order: 11;
-        width: 100%;
+        flex: 1 1 100%;
+        max-width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch
     }
 
     .vtab {
-        flex: 1 0 auto
+        flex: 1 0 auto;
+        justify-content: center
+    }
+
+    /* con la fila entera para ellas, las pestañas recuperan su nombre */
+    .view-tabs .vtab:not(.active) .btn-txt {
+        display: inline
+    }
+}
+
+@media (max-width: 720px) {
+    .hdr-in {
+        padding: 10px 12px
+    }
+
+    .filter-in,
+    .stats {
+        padding-left: 12px;
+        padding-right: 12px
     }
 
     .main {
         padding: 8px 10px 60px
+    }
+
+    /* en móvil las subtareas pasan debajo del texto: si no, lo aplastan */
+    .task-item {
+        flex-wrap: wrap
+    }
+
+    .task-item .subtasks {
+        flex: 1 0 100%;
+        margin-left: 24px
     }
 
     .kanban-wrap {
@@ -2242,6 +2508,27 @@ body.light .logo-dot {
 
     .agenda {
         padding: 8px 2px 60px
+    }
+}
+
+@media (max-width: 520px) {
+
+    /* pantallas muy estrechas: solo iconos arriba y pestañas compactas */
+    .hdr-in .btn-hdr .btn-txt {
+        display: none
+    }
+
+    .hdr-in .btn-hdr {
+        padding: 7px 10px
+    }
+
+    .view-tabs .vtab:not(.active) .btn-txt {
+        display: none
+    }
+
+    .logo {
+        font-size: .85rem;
+        letter-spacing: .12em
     }
 }
 
