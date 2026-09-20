@@ -197,6 +197,12 @@ function buildGroupEl(group, q) {
         ${PALETTE_ICON}
       </button>
       <div class="g-actions">
+        <button class="btn-ic" data-action="move-up" data-gid="${group.id}" title="Subir grupo">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M3 8l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn-ic" data-action="move-down" data-gid="${group.id}" title="Bajar grupo">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M3 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
         <button class="btn-ic" data-action="add-task" data-gid="${group.id}" title="Agregar tarea">
           <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
@@ -272,6 +278,11 @@ function buildGroupEl(group, q) {
         e.stopPropagation();
         trashGroup(group.id);
     });
+    // subir / bajar grupo (alternativa al drag)
+    const upBtn = el.querySelector('[data-action="move-up"]');
+    if (upBtn) upBtn.addEventListener('click', e => { e.stopPropagation(); moveGroup(group.id, -1); });
+    const downBtn = el.querySelector('[data-action="move-down"]');
+    if (downBtn) downBtn.addEventListener('click', e => { e.stopPropagation(); moveGroup(group.id, 1); });
     // add task shortcut
     const addTaskBtn = el.querySelector('[data-action="add-task"]');
     if (addTaskBtn) addTaskBtn.addEventListener('click', e => {
@@ -300,6 +311,12 @@ function buildGroupEl(group, q) {
             e.stopPropagation();
             trashTask(b.dataset.delTask);
         });
+    });
+    el.querySelectorAll('[data-move-up]').forEach(b => {
+        b.addEventListener('click', e => { e.stopPropagation(); moveTask(b.dataset.moveUp, -1); });
+    });
+    el.querySelectorAll('[data-move-down]').forEach(b => {
+        b.addEventListener('click', e => { e.stopPropagation(); moveTask(b.dataset.moveDown, 1); });
     });
     el.querySelectorAll('[data-chk]').forEach(b => {
         b.addEventListener('click', e => {
@@ -375,6 +392,12 @@ function buildTaskHTML(t, q) {
         </div>
       </div>
       <div class="t-actions">
+        <button class="btn-ic" data-move-up="${t.id}" title="Subir tarea">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M3 8l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn-ic" data-move-down="${t.id}" title="Bajar tarea">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M3 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
         <button class="btn-ic" data-open-task="${t.id}" title="Abrir detalle">
           <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
         </button>
@@ -762,6 +785,30 @@ function commitGroupOrder(wrap) {
     save(); render(); toast_('Grupo movido');
 }
 
+// Sube (-1) o baja (+1) un grupo un puesto, vía botones (alternativa al drag)
+function moveGroup(id, dir) {
+    const sorted = S.groups.slice().sort((a, b) => a.order - b.order);
+    const idx = sorted.findIndex(g => g.id === id);
+    const swapIdx = idx + dir;
+    if (idx === -1 || swapIdx < 0 || swapIdx >= sorted.length) return;
+    const a = sorted[idx], b = sorted[swapIdx];
+    const tmp = a.order; a.order = b.order; b.order = tmp;
+    save(); render();
+}
+
+// Sube (-1) o baja (+1) una tarea un puesto dentro de su propio grupo
+function moveTask(id, dir) {
+    const t = S.tasks.find(x => x.id === id);
+    if (!t) return;
+    const siblings = S.tasks.filter(x => x.groupId === t.groupId).sort((a, b) => a.order - b.order);
+    const idx = siblings.findIndex(x => x.id === id);
+    const swapIdx = idx + dir;
+    if (idx === -1 || swapIdx < 0 || swapIdx >= siblings.length) return;
+    const other = siblings[swapIdx];
+    const tmp = t.order; t.order = other.order; other.order = tmp;
+    save(); render();
+}
+
 // ─────────────────────────────────────────────────
 //  CMD PALETTE
 // ─────────────────────────────────────────────────
@@ -849,10 +896,15 @@ function openColorPicker(anchor, group) {
     pop.innerHTML = `
     <div class="color-pop-t">Color del bloque</div>
     <div class="color-pop-fams"></div>
-    <label class="color-pop-custom">
+    <div class="color-pop-custom">
       <span>Personalizado</span>
-      <input type="color" value="${cur}"/>
-    </label>`;
+      <div class="color-pop-custom-row">
+        <input type="color" value="${cur}"/>
+        <input type="text" class="cp-hex" value="${cur}" placeholder="#rrggbb" maxlength="7" aria-label="Color en formato hex"/>
+        <button type="button" class="btn-ghost cp-hex-ok">OK</button>
+      </div>
+    </div>
+    <div class="color-pop-hint">Ingresa un color hex o usa el selector</div>`;
 
     // una fila por familia (primarios / secundarios / otros)
     const fams = pop.querySelector('.color-pop-fams');
@@ -875,8 +927,18 @@ function openColorPicker(anchor, group) {
         fams.appendChild(sec);
     });
     const custom = pop.querySelector('input[type="color"]');
-    custom.addEventListener('input', e => previewGroupColor(group.id, e.target.value));
+    const hexInput = pop.querySelector('.cp-hex');
+    const hexOk = pop.querySelector('.cp-hex-ok');
+    custom.addEventListener('input', e => { hexInput.value = e.target.value; previewGroupColor(group.id, e.target.value); });
     custom.addEventListener('change', e => applyGroupColor(group, e.target.value));
+    // campo de texto: escribir/pegar un hex directamente (ej. #3b82f6)
+    hexInput.addEventListener('input', e => {
+        const v = e.target.value.trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) { custom.value = v; previewGroupColor(group.id, v); }
+    });
+    const applyHexInput = () => applyGroupColor(group, safeColor(hexInput.value.trim()));
+    hexInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyHexInput(); });
+    hexOk.addEventListener('click', applyHexInput);
 
     document.body.appendChild(pop);
     const r = anchor.getBoundingClientRect();
