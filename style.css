@@ -541,6 +541,14 @@ select {
     opacity: 1
 }
 
+/* en móvil/táctil no existe :hover — sin esto, los botones de .g-actions
+   (subir, bajar, +, eliminar) quedan invisibles y casi imposibles de tocar */
+@media (hover: none) {
+    .g-actions {
+        opacity: 1
+    }
+}
+
 .g-chevron {
     color: var(--txt3);
     transition: transform var(--tr);
